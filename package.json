@@ -1,0 +1,21 @@
+{
+  "name": "afriwork-hiring-guide",
+  "version": "1.0.0",
+  "description": "Simple Afriwork hiring guide landing page with PDF email delivery.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.0",
+    "express": "^5.2.1",
+    "googleapis": "^171.4.0",
+    "nodemailer": "^8.0.4",
+    "pdfkit": "^0.18.0"
+  }
+}

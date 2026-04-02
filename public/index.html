@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Afriwork | Hiring Guide</title>
+    <meta
+      name="description"
+      content="Collect leads and email them an Afriwork PDF about why hiring stays hard even after hundreds of applications."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/script.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <main class="content-wrap">
+        <section class="hero-panel">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <a class="brand-link" href="/" aria-label="Afriwork home">
+                <img class="brand-logo brand-logo--hero" src="/assets/logo-afriwork.svg" alt="Afriwork" />
+              </a>
+
+              <h1 class="hero-title">
+                <span class="hero-mask">
+                  <span class="hero-line">Why Small Businesses</span>
+                </span>
+                <span class="hero-mask">
+                  <span class="hero-line">Struggle to Hire Even After</span>
+                </span>
+                <span class="hero-mask">
+                  <span class="hero-line">
+                    Receiving <span class="headline-mark">Hundreds of</span>
+                  </span>
+                </span>
+                <span class="hero-mask">
+                  <span class="hero-line">
+                    <span class="headline-mark">Applications.</span>
+                  </span>
+                </span>
+              </h1>
+            </div>
+
+            <div class="form-column">
+              <form id="lead-form" novalidate>
+                <label class="sr-only" for="fullName">Full name</label>
+                <div class="field-control">
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    placeholder="Full name"
+                    autocomplete="name"
+                    required
+                  />
+                  <div id="fullName-error" class="field-error" aria-live="polite"></div>
+                </div>
+
+                <label class="sr-only" for="companyName">Company name</label>
+                <div class="field-control">
+                  <input
+                    id="companyName"
+                    name="companyName"
+                    type="text"
+                    placeholder="Company name"
+                    autocomplete="organization"
+                    required
+                  />
+                  <div id="companyName-error" class="field-error" aria-live="polite"></div>
+                </div>
+
+                <label class="sr-only" for="email">Email</label>
+                <div class="field-control">
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Email"
+                    autocomplete="email"
+                    required
+                  />
+                  <div id="email-error" class="field-error" aria-live="polite"></div>
+                </div>
+
+                <label class="sr-only" for="phone">Phone</label>
+                <div class="field-control phone-control">
+                  <div class="phone-field" id="phone-field">
+                    <span class="phone-prefix">+251</span>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="912345678"
+                      autocomplete="tel-national"
+                      inputmode="numeric"
+                      aria-describedby="phone-error"
+                      required
+                    />
+                  </div>
+                  <div id="phone-error" class="field-error" aria-live="polite"></div>
+                </div>
+
+                <label class="sr-only" for="companyScale">Company size</label>
+                <div class="field-control">
+                  <select id="companyScale" name="companyScale" aria-describedby="companyScale-error" required>
+                    <option value="">Company size</option>
+                    <option value="1-10 employees">1-10 employees</option>
+                    <option value="11-50 employees">11-50 employees</option>
+                    <option value="51-200 employees">51-200 employees</option>
+                    <option value="201-500 employees">201-500 employees</option>
+                    <option value="500+ employees">500+ employees</option>
+                  </select>
+                  <div id="companyScale-error" class="field-error" aria-live="polite"></div>
+                </div>
+
+                <label class="sr-only" for="position">Position at company</label>
+                <div class="field-control">
+                  <input
+                    id="position"
+                    name="position"
+                    type="text"
+                    placeholder="Position at company"
+                    autocomplete="organization-title"
+                    required
+                  />
+                  <div id="position-error" class="field-error" aria-live="polite"></div>
+                </div>
+
+                <div class="form-actions">
+                  <button class="submit-button" type="submit" aria-label="Get Document">
+                    <span class="sr-only">Get Document</span>
+                  </button>
+                </div>
+
+                <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+  </body>
+</html>
