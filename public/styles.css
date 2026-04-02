@@ -366,6 +366,10 @@ select:focus {
   opacity: 0.8;
 }
 
+.submit-button.is-loading {
+  opacity: 0.82;
+}
+
 .form-status {
   min-height: 20px;
   padding-top: 2px;

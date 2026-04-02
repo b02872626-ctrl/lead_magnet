@@ -2,7 +2,6 @@ const form = document.querySelector("#lead-form");
 const statusBox = document.querySelector("#form-status");
 const submitButton = form?.querySelector('button[type="submit"]');
 const phoneInput = document.querySelector("#phone");
-const defaultButtonText = submitButton?.textContent || "Submit";
 
 const requiredFieldIds = [
   "fullName",
@@ -71,7 +70,8 @@ if (form && statusBox && submitButton) {
 
     setStatus("", "");
     submitButton.disabled = true;
-    submitButton.textContent = "Sending...";
+    submitButton.classList.add("is-loading");
+    submitButton.setAttribute("aria-busy", "true");
 
     try {
       const response = await fetch("/api/leads", {
@@ -82,7 +82,7 @@ if (form && statusBox && submitButton) {
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
+      const result = await readJsonResponse(response);
 
       if (!response.ok || !result.ok) {
         throw new Error(result.message || "Something went wrong.");
@@ -102,7 +102,8 @@ if (form && statusBox && submitButton) {
       );
     } finally {
       submitButton.disabled = false;
-      submitButton.textContent = defaultButtonText;
+      submitButton.classList.remove("is-loading");
+      submitButton.removeAttribute("aria-busy");
     }
   });
 }
@@ -191,4 +192,24 @@ function setStatus(message, className) {
   if (className) {
     statusBox.classList.add(className);
   }
+}
+
+async function readJsonResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const rawText = (await response.text()).trim();
+
+  if (!response.ok) {
+    if (rawText) {
+      throw new Error(rawText.slice(0, 180));
+    }
+
+    throw new Error("The form service is unavailable right now.");
+  }
+
+  throw new Error("The form service returned an unexpected response.");
 }

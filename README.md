@@ -6,7 +6,7 @@ Simple landing page for collecting leads, emailing a PDF, and saving submissions
 
 - Serves the Afriwork hiring guide landing page.
 - Captures lead details through a form.
-- Saves every submission to `storage/leads.csv`.
+- Saves every submission to `storage/leads.csv` in local development.
 - Appends each submission to Google Sheets when configured.
 - Generates a branded PDF on the server.
 - Emails the PDF to the submitted address when SMTP is configured.
@@ -98,16 +98,19 @@ Instead of `GOOGLE_SERVICE_ACCOUNT_KEY_FILE`, you can use either:
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY`
 - `GOOGLE_SERVICE_ACCOUNT_JSON`
 
+For Vercel, prefer `GOOGLE_SERVICE_ACCOUNT_JSON` in the project environment variables instead of uploading a key file.
+
 ## What happens on form submit
 
 When someone submits the form, the server will:
 
-1. Save the lead locally in `storage/leads.csv`
+1. Save the lead locally in `storage/leads.csv` when local file storage is enabled
 2. Append the lead to Google Sheets if configured
 3. Generate the PDF
 4. Email the PDF to the lead if SMTP is configured
+5. Create a browser download link only when download links are enabled
 
-If SMTP or Google Sheets is missing, the app still saves the lead locally and returns a warning message instead of silently failing.
+If SMTP or Google Sheets is missing, the app still returns a warning message instead of silently failing.
 
 ## Data storage
 
@@ -116,6 +119,31 @@ Local backup of all leads:
 ```text
 storage/leads.csv
 ```
+
+On Vercel, local disk is not persistent. The production-safe setup is:
+
+- use Google Sheets as the lead store
+- use SMTP for PDF delivery
+- keep `ENABLE_LOCAL_FILE_STORAGE` disabled
+- keep `ENABLE_DOWNLOAD_LINKS` disabled unless you move PDFs to durable storage like Vercel Blob, S3, or Cloudflare R2
+
+## Deploying to Vercel
+
+1. Import the GitHub repo into Vercel.
+2. Add these environment variables in the Vercel project:
+   - `SMTP_HOST`
+   - `SMTP_PORT`
+   - `SMTP_SECURE`
+   - `SMTP_USER`
+   - `SMTP_PASS`
+   - `SMTP_FROM`
+   - `ADMIN_EMAIL` optional
+   - `GOOGLE_SHEETS_SPREADSHEET_ID`
+   - `GOOGLE_SHEETS_SHEET_NAME` optional
+   - `GOOGLE_SERVICE_ACCOUNT_JSON`
+3. Redeploy after saving the variables.
+
+The repo includes `api/[...route].js` so `/api/leads` and `/api/health` run as Vercel Functions, while the landing page is served statically from `public/`.
 
 ## Customizing the PDF
 

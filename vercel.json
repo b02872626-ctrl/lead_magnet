@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/[...route].js": {
+      "includeFiles": "public/assets/logo-afriwork.svg"
+    }
+  }
+}

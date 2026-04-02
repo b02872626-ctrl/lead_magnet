@@ -13,6 +13,12 @@ dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+const IS_VERCEL = process.env.VERCEL === "1" || process.env.VERCEL === "true";
+const ENABLE_LOCAL_FILE_STORAGE = getBooleanEnv("ENABLE_LOCAL_FILE_STORAGE", !IS_VERCEL);
+const ENABLE_DOWNLOAD_LINKS = getBooleanEnv(
+  "ENABLE_DOWNLOAD_LINKS",
+  ENABLE_LOCAL_FILE_STORAGE && !IS_VERCEL
+);
 const STORAGE_DIR = path.join(__dirname, "storage");
 const LEADS_CSV_PATH = path.join(STORAGE_DIR, "leads.csv");
 const DOWNLOADS_DIR = path.join(STORAGE_DIR, "downloads");
@@ -39,6 +45,10 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.get("/download/:token", async (req, res) => {
+  if (!ENABLE_DOWNLOAD_LINKS) {
+    return res.status(404).send("File not found.");
+  }
+
   const token = sanitizeDownloadToken(req.params.token);
 
   if (!token) {
@@ -72,10 +82,15 @@ app.post("/api/leads", async (req, res) => {
   };
 
   try {
-    await appendLeadToCsv(record);
+    if (ENABLE_LOCAL_FILE_STORAGE) {
+      await appendLeadToCsv(record);
+    }
+
     const sheetResult = await syncLeadToGoogleSheets(record);
     const pdfBuffer = await generateLeadMagnetPdf(record);
-    const downloadUrl = await createDownloadLink(req, pdfBuffer);
+    const downloadUrl = ENABLE_DOWNLOAD_LINKS
+      ? await createDownloadLink(req, pdfBuffer)
+      : null;
 
     let emailResult = {
       emailSent: false,
@@ -107,13 +122,24 @@ app.post("/api/leads", async (req, res) => {
   }
 });
 
+app.use("/api", (_req, res) => {
+  res.status(404).json({
+    ok: false,
+    message: "API route not found.",
+  });
+});
+
 app.get("/*splat", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`Afriwork hiring guide running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Afriwork hiring guide running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
 
 function normalizeLead(body = {}) {
   return {
@@ -128,6 +154,16 @@ function normalizeLead(body = {}) {
 
 function normalizeText(value) {
   return String(value || "").trim();
+}
+
+function getBooleanEnv(name, defaultValue = false) {
+  const value = normalizeText(process.env[name]).toLowerCase();
+
+  if (!value) {
+    return defaultValue;
+  }
+
+  return value === "1" || value === "true" || value === "yes" || value === "on";
 }
 
 function normalizePhone(value) {
@@ -465,22 +501,32 @@ function buildSubmissionMessage(sheetResult, emailResult) {
   }
 
   if (sheetResult.configured && !sheetResult.synced && emailResult.emailSent) {
-    return "The PDF has been sent, but Google Sheets sync failed. The lead was still saved locally.";
+    return ENABLE_LOCAL_FILE_STORAGE
+      ? "The PDF has been sent, but Google Sheets sync failed. The lead was still saved locally."
+      : "The PDF has been sent, but Google Sheets sync failed.";
   }
 
   if (!sheetResult.configured && !emailResult.configured) {
-    return "Lead saved locally. Configure SMTP and Google Sheets in .env to email the PDF and sync submissions.";
+    return ENABLE_LOCAL_FILE_STORAGE
+      ? "Lead saved locally. Configure SMTP and Google Sheets in .env to email the PDF and sync submissions."
+      : "Submission received, but SMTP and Google Sheets are not configured yet.";
   }
 
   if (!sheetResult.configured) {
-    return "Lead saved locally. Configure Google Sheets in .env to sync submissions there.";
+    return ENABLE_LOCAL_FILE_STORAGE
+      ? "Lead saved locally. Configure Google Sheets in .env to sync submissions there."
+      : "Submission received. Configure Google Sheets in .env to sync submissions there.";
   }
 
   if (!emailResult.configured) {
-    return "Lead saved locally. Configure SMTP in .env to automatically email the PDF.";
+    return ENABLE_LOCAL_FILE_STORAGE
+      ? "Lead saved locally. Configure SMTP in .env to automatically email the PDF."
+      : "Submission received. Configure SMTP in .env to automatically email the PDF.";
   }
 
-  return "Lead saved locally, but email delivery and Google Sheets sync need attention. Check your .env settings.";
+  return ENABLE_LOCAL_FILE_STORAGE
+    ? "Lead saved locally, but email delivery and Google Sheets sync need attention. Check your .env settings."
+    : "Submission received, but email delivery and Google Sheets sync need attention. Check your .env settings.";
 }
 
 function buildLeadEmailHtml(lead, downloadUrl) {
