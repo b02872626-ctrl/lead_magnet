@@ -19,6 +19,7 @@ const ENABLE_DOWNLOAD_LINKS = getBooleanEnv(
   "ENABLE_DOWNLOAD_LINKS",
   ENABLE_LOCAL_FILE_STORAGE && !IS_VERCEL
 );
+const GUIDE_DOWNLOAD_URL = normalizeGuideDownloadUrl(process.env.GUIDE_DOWNLOAD_URL);
 const STORAGE_DIR = path.join(__dirname, "storage");
 const LEADS_CSV_PATH = path.join(STORAGE_DIR, "leads.csv");
 const DOWNLOADS_DIR = path.join(STORAGE_DIR, "downloads");
@@ -88,9 +89,9 @@ app.post("/api/leads", async (req, res) => {
 
     const sheetResult = await syncLeadToGoogleSheets(record);
     const pdfBuffer = await generateLeadMagnetPdf(record);
-    const downloadUrl = ENABLE_DOWNLOAD_LINKS
-      ? await createDownloadLink(req, pdfBuffer)
-      : null;
+    const downloadUrl =
+      GUIDE_DOWNLOAD_URL ||
+      (ENABLE_DOWNLOAD_LINKS ? await createDownloadLink(req, pdfBuffer) : null);
 
     let emailResult = {
       emailSent: false,
@@ -164,6 +165,21 @@ function getBooleanEnv(name, defaultValue = false) {
   }
 
   return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
+function normalizeGuideDownloadUrl(value) {
+  const url = normalizeText(value);
+
+  if (!url) {
+    return "";
+  }
+
+  const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  if (driveFileMatch?.[1]) {
+    return `https://drive.google.com/uc?export=download&id=${driveFileMatch[1]}`;
+  }
+
+  return url;
 }
 
 function normalizePhone(value) {

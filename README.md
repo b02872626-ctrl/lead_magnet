@@ -55,6 +55,7 @@ Required variables:
 Optional:
 
 - `ADMIN_EMAIL`
+- `GUIDE_DOWNLOAD_URL`
 
 ### Gmail example
 
@@ -108,7 +109,7 @@ When someone submits the form, the server will:
 2. Append the lead to Google Sheets if configured
 3. Generate the PDF
 4. Email the PDF to the lead if SMTP is configured
-5. Create a browser download link only when download links are enabled
+5. Add a browser download button when `GUIDE_DOWNLOAD_URL` is set, or when local download links are enabled
 
 If SMTP or Google Sheets is missing, the app still returns a warning message instead of silently failing.
 
@@ -124,6 +125,7 @@ On Vercel, local disk is not persistent. The production-safe setup is:
 
 - use Google Sheets as the lead store
 - use SMTP for PDF delivery
+- set `GUIDE_DOWNLOAD_URL` to a public Google Drive or hosted PDF link if you want a download button in the email
 - keep `ENABLE_LOCAL_FILE_STORAGE` disabled
 - keep `ENABLE_DOWNLOAD_LINKS` disabled unless you move PDFs to durable storage like Vercel Blob, S3, or Cloudflare R2
 
@@ -138,6 +140,7 @@ On Vercel, local disk is not persistent. The production-safe setup is:
    - `SMTP_PASS`
    - `SMTP_FROM`
    - `ADMIN_EMAIL` optional
+   - `GUIDE_DOWNLOAD_URL` optional
    - `GOOGLE_SHEETS_SPREADSHEET_ID`
    - `GOOGLE_SHEETS_SHEET_NAME` optional
    - `GOOGLE_SERVICE_ACCOUNT_JSON`
